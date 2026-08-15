@@ -9,8 +9,7 @@ export const profile = {
   role: 'Geospatial Data Scientist & Precision Forestry Researcher',
   blurb: 'A GIS-focused portfolio of education and experience. Click any marker or entry to explore details.',
   email: 'ergin@ualberta.ca',
-  /** Back link to the main site — update if the custom domain differs. */
-  homeUrl: 'https://ergin-portfolio.vercel.app',
+  homeUrl: 'https://ergin.ca',
   links: {
     linkedin: 'https://www.linkedin.com/in/ergincagataycankaya/',
     github: 'https://github.com/ergincagataycankaya',
