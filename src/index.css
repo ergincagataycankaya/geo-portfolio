@@ -2,38 +2,39 @@
 @import 'leaflet/dist/leaflet.css';
 
 :root {
-  --bg-deep-rgb: 12 12 15;
-  --bg-rgb: 17 17 21;
-  --card-rgb: 24 24 29;
-  --card-hover-rgb: 30 30 36;
-  --line-rgb: 45 45 52;
-  --line-strong-rgb: 62 62 70;
+  --bg-deep: #090d12;
+  --bg: #0d1117;
+  --card: #131a22;
+  --card-hover: #1a222c;
+  --line: #1f2933;
+  --line-strong: #2c3846;
 
-  --ink-rgb: 239 233 221;
-  --body-rgb: 169 166 182;
-  --dim-rgb: 116 112 127;
+  --ink: #e6edf3;
+  --body: #8b98a5;
+  --dim: #667585;
 
-  --accent-rgb: 230 179 87;
-  --accent-soft-rgb: 242 212 154;
+  --blue: #4d9fec;
+  --amber: #e8b93f;
 }
 
 @theme {
-  --color-ink-900: rgb(var(--bg-deep-rgb));
-  --color-ink-800: rgb(var(--bg-rgb));
-  --color-ink-700: rgb(var(--card-rgb));
-  --color-ink-600: rgb(var(--card-hover-rgb));
-  --color-ink-400: rgb(var(--line-rgb));
-  --color-ink-300: rgb(var(--line-strong-rgb));
+  --color-ink-900: var(--bg-deep);
+  --color-ink-800: var(--bg);
+  --color-ink-700: var(--card);
+  --color-ink-600: var(--card-hover);
+  --color-ink-400: var(--line);
+  --color-ink-300: var(--line-strong);
 
-  --color-sand: rgb(var(--ink-rgb));
-  --color-muted: rgb(var(--body-rgb));
-  --color-dim: rgb(var(--dim-rgb));
+  --color-sand: var(--ink);
+  --color-muted: var(--body);
+  --color-dim: var(--dim);
 
-  --color-amber: rgb(var(--accent-rgb));
-  --color-amber-soft: rgb(var(--accent-soft-rgb));
+  --color-blue: var(--blue);
+  --color-amber: var(--amber);
 
   --font-sans: Inter, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --font-serif: Newsreader, Georgia, serif;
+  --font-mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
 }
 
 html,
@@ -43,60 +44,137 @@ body,
 }
 
 body {
-  background: var(--color-ink-900);
-  color: var(--color-muted);
+  margin: 0;
+  background: var(--bg-deep);
+  color: var(--body);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Small uppercase mono label — the sidebar's section headers and chrome. */
+.label {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* ---- Leaflet chrome, recoloured to sit inside the dark theme ---- */
+
+.leaflet-container {
+  background: var(--bg-deep);
   font-family: var(--font-sans);
 }
 
-/* Recolor Leaflet chrome to sit inside the dark theme. */
-.leaflet-container {
-  background: rgb(var(--bg-rgb));
-  font-family: var(--font-sans);
+/* The basemap is satellite imagery darkened down to a night palette; the label
+   pane sits in its own pane above so the filter never touches the text. */
+.leaflet-imagery-pane {
+  filter: brightness(0.45) saturate(0.55) contrast(1.15) hue-rotate(-8deg);
+}
+
+.leaflet-control-zoom {
+  border: none !important;
+  box-shadow: none !important;
 }
 
 .leaflet-control-zoom a,
-.leaflet-control-attribution {
-  background: rgb(var(--card-rgb)) !important;
-  color: rgb(var(--body-rgb)) !important;
-  border-color: rgb(var(--line-rgb)) !important;
+.map-btn {
+  display: grid !important;
+  place-items: center;
+  width: 32px !important;
+  height: 32px !important;
+  margin-bottom: 4px;
+  border: 1px solid var(--line) !important;
+  border-radius: 6px;
+  background: rgb(13 17 23 / 0.85) !important;
+  color: var(--body) !important;
+  font-size: 16px !important;
+  line-height: 1 !important;
+  backdrop-filter: blur(6px);
+  transition: all 0.15s ease;
 }
 
-.leaflet-control-zoom a:hover {
-  background: rgb(var(--card-hover-rgb)) !important;
-  color: rgb(var(--ink-rgb)) !important;
-}
-
-.leaflet-popup-content-wrapper,
-.leaflet-popup-tip {
-  background: rgb(var(--card-rgb));
-  color: rgb(var(--ink-rgb));
+.leaflet-control-zoom a:hover,
+.map-btn:hover {
+  border-color: var(--line-strong) !important;
+  background: rgb(26 34 44 / 0.95) !important;
+  color: var(--ink) !important;
 }
 
 .leaflet-popup-content-wrapper {
-  border: 1px solid rgb(var(--line-rgb));
-  border-radius: 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.5);
 }
 
-.marker-pin {
-  width: 16px;
-  height: 16px;
+.leaflet-popup-content {
+  margin: 10px 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+}
+
+.leaflet-popup-tip {
+  background: var(--card);
+  border: 1px solid var(--line);
+}
+
+.leaflet-popup-close-button {
+  color: var(--dim) !important;
+}
+
+.leaflet-control-attribution {
+  border-radius: 4px 0 0 0;
+  background: rgb(9 13 18 / 0.85) !important;
+  color: var(--dim) !important;
+  font-family: var(--font-mono);
+  font-size: 9px !important;
+}
+
+.leaflet-control-attribution a {
+  color: var(--body) !important;
+}
+
+/* ---- Markers ---- */
+
+.pin {
+  display: block;
+  filter: drop-shadow(0 2px 4px rgb(0 0 0 / 0.6));
+  transition: transform 0.18s ease;
+  transform-origin: 50% 100%;
+}
+
+.pin:hover {
+  transform: scale(1.12);
+}
+
+.pin.is-active {
+  transform: scale(1.22);
+  filter: drop-shadow(0 0 10px currentColor) drop-shadow(0 2px 4px rgb(0 0 0 / 0.6));
+}
+
+/* ---- Scrollbar ---- */
+
+.scroll-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+
+.scroll-thin::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scroll-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scroll-thin::-webkit-scrollbar-thumb {
   border-radius: 999px;
-  background: rgb(var(--accent-rgb));
-  border: 2px solid rgb(var(--bg-deep-rgb));
-  box-shadow: 0 0 0 3px rgb(var(--accent-rgb) / 0.25);
-  transition: transform 0.15s ease;
+  background: var(--line-strong);
 }
 
-.marker-pin.is-active {
-  background: rgb(var(--accent-soft-rgb));
-  transform: scale(1.25);
-}
-
-::-webkit-scrollbar {
-  width: 8px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgb(var(--line-strong-rgb));
-  border-radius: 999px;
+.scroll-thin::-webkit-scrollbar-thumb:hover {
+  background: var(--dim);
 }
