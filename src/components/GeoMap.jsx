@@ -1,9 +1,48 @@
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Pane, ZoomControl, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { categoryColors } from '../data';
 
 const WORLD_VIEW = { center: [30, -10], zoom: 3 };
+
+// Keyless Esri services only: CARTO started watermarking tiles with "API key
+// required", so every source here must work without a key. Each list is tried
+// in order; later entries are mirrors used if the first keeps failing.
+const esri = (host, service) =>
+  `https://${host}.arcgisonline.com/ArcGIS/rest/services/${service}/MapServer/tile/{z}/{y}/{x}`;
+const TILE_SOURCES = {
+  imagery: [esri('services', 'World_Imagery'), esri('server', 'World_Imagery')],
+  labels: [
+    esri('services', 'Reference/World_Boundaries_and_Places'),
+    esri('server', 'Reference/World_Boundaries_and_Places'),
+  ],
+};
+const MAX_TILE_ERRORS = 6;
+
+/** Tile layer that moves to the next mirror after repeated tile failures. */
+const FallbackTileLayer = ({ urls, attribution }) => {
+  const [index, setIndex] = useState(0);
+  const errors = useRef(0);
+  const onTileError = useCallback(() => {
+    errors.current += 1;
+    if (errors.current >= MAX_TILE_ERRORS && index < urls.length - 1) {
+      errors.current = 0;
+      setIndex((i) => i + 1);
+    }
+  }, [index, urls.length]);
+
+  return (
+    <TileLayer
+      key={urls[index]}
+      url={urls[index]}
+      attribution={attribution}
+      maxZoom={18}
+      maxNativeZoom={17}
+      crossOrigin
+      eventHandlers={{ tileerror: onTileError }}
+    />
+  );
+};
 
 /** Classic teardrop pin, tinted by the category it represents. */
 const pinIcon = (color, active) =>
@@ -72,17 +111,15 @@ const GeoMap = ({ places, activeKey, onSelectPlace }) => (
     <ZoomControl position="topright" />
     {/* Imagery is darkened by CSS; labels ride in a pane above so they stay crisp. */}
     <Pane name="imagery" className="leaflet-imagery-pane" style={{ zIndex: 200 }}>
-      <TileLayer
-        url="https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+      <FallbackTileLayer
+        urls={TILE_SOURCES.imagery}
         attribution="&copy; Esri, Maxar, Earthstar Geographics"
-        maxZoom={18}
       />
     </Pane>
-    <Pane name="labels" style={{ zIndex: 250 }}>
-      <TileLayer
-        url="https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png"
-        attribution="&copy; OpenStreetMap &copy; CARTO"
-        maxZoom={18}
+    <Pane name="labels" className="leaflet-labels-pane" style={{ zIndex: 250 }}>
+      <FallbackTileLayer
+        urls={TILE_SOURCES.labels}
+        attribution="&copy; Esri"
       />
     </Pane>
 

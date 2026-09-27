@@ -72,6 +72,11 @@ body {
   filter: brightness(0.45) saturate(0.55) contrast(1.15) hue-rotate(-8deg);
 }
 
+/* Esri reference labels are drawn for imagery; soften them to fit the night palette. */
+.leaflet-labels-pane {
+  opacity: 0.75;
+}
+
 .leaflet-control-zoom {
   border: none !important;
   box-shadow: none !important;
