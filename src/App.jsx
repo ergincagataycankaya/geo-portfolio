@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import Sidebar from './components/Sidebar';
 import GeoMap from './components/GeoMap';
 import DetailPanel from './components/DetailPanel';
@@ -61,6 +62,7 @@ const App = () => {
 
         <DetailPanel entry={activeEntry} onClose={() => setActiveEntry(null)} />
       </main>
+      <Analytics />
     </div>
   );
 };
