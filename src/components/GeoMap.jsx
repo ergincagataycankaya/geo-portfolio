@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Pane, ZoomControl, useMap } from 'react-leaflet';
 import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import { categoryColors } from '../data';
 
 const WORLD_VIEW = { center: [30, -10], zoom: 3 };
@@ -45,8 +46,12 @@ const FallbackTileLayer = ({ urls, attribution }) => {
 };
 
 /** Classic teardrop pin, tinted by the category it represents. */
-const pinIcon = (color, active) =>
-  L.divIcon({
+const iconCache = new Map();
+const pinIcon = (color, active) => {
+  const key = `${color}:${active}`;
+  if (iconCache.has(key)) return iconCache.get(key);
+
+  const icon = L.divIcon({
     className: '',
     html: `<svg class="pin${active ? ' is-active' : ''}" style="color:${color}" width="26" height="38" viewBox="0 0 27 41" xmlns="http://www.w3.org/2000/svg">
       <path d="M13.5 0C6 0 0 6 0 13.5 0 23 13.5 41 13.5 41S27 23 27 13.5C27 6 21 0 13.5 0z" fill="${color}"/>
@@ -56,6 +61,9 @@ const pinIcon = (color, active) =>
     iconAnchor: [13, 38],
     popupAnchor: [0, -34],
   });
+  iconCache.set(key, icon);
+  return icon;
+};
 
 /** Recenters the map whenever the selected place changes, without remounting it. */
 const FlyTo = ({ target }) => {
@@ -144,4 +152,4 @@ const GeoMap = ({ places, activeKey, onSelectPlace }) => (
   </MapContainer>
 );
 
-export default GeoMap;
+export default memo(GeoMap);
