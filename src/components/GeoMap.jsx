@@ -20,7 +20,7 @@ const TILE_SOURCES = {
 const MAX_TILE_ERRORS = 6;
 
 /** Tile layer that moves to the next mirror after repeated tile failures. */
-const FallbackTileLayer = ({ urls, attribution }) => {
+const FallbackTileLayer = ({ urls, attribution, onLoad }) => {
   const [index, setIndex] = useState(0);
   const errors = useRef(0);
   const onTileError = useCallback(() => {
@@ -39,7 +39,7 @@ const FallbackTileLayer = ({ urls, attribution }) => {
       maxZoom={18}
       maxNativeZoom={17}
       crossOrigin
-      eventHandlers={{ tileerror: onTileError }}
+      eventHandlers={onLoad ? { load: onLoad, tileerror: onTileError } : { tileerror: onTileError }}
     />
   );
 };
@@ -99,49 +99,57 @@ const ResetViewButton = () => {
   );
 };
 
-const GeoMap = ({ places, activeKey, onSelectPlace }) => (
-  <MapContainer
-    center={WORLD_VIEW.center}
-    zoom={WORLD_VIEW.zoom}
-    minZoom={2}
-    worldCopyJump
-    zoomControl={false}
-    className="h-full w-full"
-  >
-    <ZoomControl position="topright" />
-    {/* Imagery is darkened by CSS; labels ride in a pane above so they stay crisp. */}
-    <Pane name="imagery" className="leaflet-imagery-pane" style={{ zIndex: 200 }}>
-      <FallbackTileLayer
-        urls={TILE_SOURCES.imagery}
-        attribution="&copy; Esri, Maxar, Earthstar Geographics"
-      />
-    </Pane>
-    <Pane name="labels" className="leaflet-labels-pane" style={{ zIndex: 250 }}>
-      <FallbackTileLayer
-        urls={TILE_SOURCES.labels}
-        attribution="&copy; Esri"
-      />
-    </Pane>
+const GeoMap = ({ places, activeKey, onSelectPlace }) => {
+  const [imageryReady, setImageryReady] = useState(false);
+  const handleImageryLoad = useCallback(() => setImageryReady(true), []);
 
-    {places.map((p) => {
-      const color = categoryColors[p.entries[0].category];
-      return (
-        <Marker
-          key={p.key}
-          position={[p.lat, p.lon]}
-          icon={pinIcon(color, activeKey === p.key)}
-          eventHandlers={{ click: () => onSelectPlace(p.key) }}
-        >
-          <Popup>
-            {p.place} · {p.entries.length} {p.entries.length === 1 ? 'entry' : 'entries'}
-          </Popup>
-        </Marker>
-      );
-    })}
+  return (
+    <MapContainer
+      center={WORLD_VIEW.center}
+      zoom={WORLD_VIEW.zoom}
+      minZoom={2}
+      worldCopyJump
+      zoomControl={false}
+      className="h-full w-full"
+    >
+      <ZoomControl position="topright" />
+      {/* Load labels only after imagery to avoid competing for initial tile bandwidth. */}
+      <Pane name="imagery" className="leaflet-imagery-pane" style={{ zIndex: 200 }}>
+        <FallbackTileLayer
+          urls={TILE_SOURCES.imagery}
+          attribution="&copy; Esri, Maxar, Earthstar Geographics"
+          onLoad={handleImageryLoad}
+        />
+      </Pane>
+      {imageryReady ? (
+        <Pane name="labels" className="leaflet-labels-pane" style={{ zIndex: 250 }}>
+          <FallbackTileLayer
+            urls={TILE_SOURCES.labels}
+            attribution="&copy; Esri"
+          />
+        </Pane>
+      ) : null}
 
-    <FlyTo target={places.find((p) => p.key === activeKey) ?? null} />
-    <ResetViewButton />
-  </MapContainer>
-);
+      {places.map((p) => {
+        const color = categoryColors[p.entries[0].category];
+        return (
+          <Marker
+            key={p.key}
+            position={[p.lat, p.lon]}
+            icon={pinIcon(color, activeKey === p.key)}
+            eventHandlers={{ click: () => onSelectPlace(p.key) }}
+          >
+            <Popup>
+              {p.place} · {p.entries.length} {p.entries.length === 1 ? 'entry' : 'entries'}
+            </Popup>
+          </Marker>
+        );
+      })}
+
+      <FlyTo target={places.find((p) => p.key === activeKey) ?? null} />
+      <ResetViewButton />
+    </MapContainer>
+  );
+};
 
 export default memo(GeoMap);
