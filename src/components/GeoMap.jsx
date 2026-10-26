@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Pane, ZoomControl, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import { categoryColors } from '../data';
@@ -144,4 +144,4 @@ const GeoMap = ({ places, activeKey, onSelectPlace }) => (
   </MapContainer>
 );
 
-export default GeoMap;
+export default memo(GeoMap);
