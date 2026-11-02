@@ -28,7 +28,7 @@ const FallbackTileLayer = ({ urls, attribution }) => {
     errors.current += 1;
     if (errors.current >= MAX_TILE_ERRORS && index < urls.length - 1) {
       errors.current = 0;
-      setIndex((i) => i + 1);
+      setIndex((i) => Math.min(i + 1, urls.length - 1));
     }
   }, [index, urls.length]);
 
