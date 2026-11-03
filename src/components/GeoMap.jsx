@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Pane, ZoomControl, useMap } from 'react-leaflet';
 import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import { categoryColors } from '../data';
 
 const WORLD_VIEW = { center: [30, -10], zoom: 3 };
@@ -27,7 +28,7 @@ const FallbackTileLayer = ({ urls, attribution }) => {
     errors.current += 1;
     if (errors.current >= MAX_TILE_ERRORS && index < urls.length - 1) {
       errors.current = 0;
-      setIndex((i) => i + 1);
+      setIndex((i) => Math.min(i + 1, urls.length - 1));
     }
   }, [index, urls.length]);
 
@@ -144,4 +145,4 @@ const GeoMap = ({ places, activeKey, onSelectPlace }) => (
   </MapContainer>
 );
 
-export default GeoMap;
+export default memo(GeoMap);

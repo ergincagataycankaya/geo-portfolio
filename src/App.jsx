@@ -1,10 +1,11 @@
-import { useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useMemo, useState } from 'react';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 import Sidebar from './components/Sidebar';
-import GeoMap from './components/GeoMap';
 import DetailPanel from './components/DetailPanel';
 import { profile, entries, places, countryCount } from './data';
+
+const GeoMap = lazy(() => import('./components/GeoMap'));
 
 const App = () => {
   const [filter, setFilter] = useState('all');
@@ -26,10 +27,10 @@ const App = () => {
     });
   }, [filteredEntries]);
 
-  const handleSelectPlace = (key) => {
+  const handleSelectPlace = useCallback((key) => {
     const place = visiblePlaces.find((p) => p.key === key);
     if (place) setActiveEntry(place.entries[0]);
-  };
+  }, [visiblePlaces]);
 
   return (
     <div className="grid min-h-screen grid-cols-1 md:h-screen md:grid-cols-[400px_1fr]">
@@ -49,11 +50,22 @@ const App = () => {
 
       {/* On phones the map leads and stays pinned while the timeline scrolls under it. */}
       <main className="sticky top-0 z-10 order-first h-[55vh] md:static md:order-none md:h-full">
-        <GeoMap
-          places={visiblePlaces}
-          activeKey={activeEntry ? `${activeEntry.lat},${activeEntry.lon}` : null}
-          onSelectPlace={handleSelectPlace}
-        />
+        <Suspense
+          fallback={
+            <div
+              className="grid h-full w-full place-items-center bg-ink-900 text-sm text-dim"
+              role="status"
+            >
+              Loading map…
+            </div>
+          }
+        >
+          <GeoMap
+            places={visiblePlaces}
+            activeKey={activeEntry ? `${activeEntry.lat},${activeEntry.lon}` : null}
+            onSelectPlace={handleSelectPlace}
+          />
+        </Suspense>
 
         {!activeEntry && (
           <div className="label pointer-events-none absolute bottom-6 left-1/2 z-[1000] -translate-x-1/2 rounded-md border border-ink-400 bg-ink-800/90 px-4 py-2.5 text-dim backdrop-blur-md">
